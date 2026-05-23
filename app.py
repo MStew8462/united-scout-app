@@ -46,17 +46,29 @@ if df_players is not None:
 
     total_possible_weight = (w_progression + w_retention + w_tackling + w_recoveries + w_box_threat + w_physicality) * 100
 
-    # HELPER FUNCTION FOR FIT % CALCULATION (Uses background aggregated tier vectors)
+        # HELPER FUNCTION FOR FIT % CALCULATION (Using the raw data columns safely)
     def calculate_fit(row):
+        # Fallback math mapping directly to the advanced raw metrics
+        calc_passing = float(row.get("pPassing", (row["PassPctShort"] + row["PassPctLong"]) / 2))
+        calc_retention = float(row.get("pRetention", row["PressPassPct"]))
+        calc_defending = float(row.get("pDefending", row["DribblersTackledPct"]))
+        calc_hunting = float(row.get("pHunting", (row["TacklesMid3rd"] * 25) + 30))  # Estimated scaled percentile
+        calc_threat = float(row.get("pThreat", (row["SCA"] * 15) + 20))
+        calc_physical = float(row.get("pPhysical", row["AerialWonPct"]))
+
         weighted_score = (
-            (row["pPassing"] * w_progression) +
-            (row["pRetention"] * w_retention) +
-            (row["pDefending"] * w_tackling) +
-            (row["pHunting"] * w_recoveries) +
-            (row["pThreat"] * w_box_threat) +
-            (row["pPhysical"] * w_physicality)
+            (calc_passing * w_progression) +
+            (calc_retention * w_retention) +
+            (calc_defending * w_tackling) +
+            (calc_hunting * w_recoveries) +
+            (calc_threat * w_box_threat) +
+            (calc_physical * w_physicality)
         )
         return round((weighted_score / total_possible_weight) * 100, 1)
+
+    # Force string clean-up on the dataframe column names just in case of hidden GitHub spaces
+    df_players.columns = df_players.columns.str.strip()
+    df_players["FitScore"] = df_players.apply(calculate_fit, axis=1)
 
     df_players["FitScore"] = df_players.apply(calculate_fit, axis=1)
 
