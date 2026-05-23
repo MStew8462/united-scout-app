@@ -4,107 +4,55 @@ import pandas as pd
 # Set page layout to wide
 st.set_page_config(layout="wide", page_title="United Transfer Scout")
 
-# INJECT CUSTOM CSS TO MATCH THE MAIN APPS THEME & TYPOGRAPHY
+# INJECT CSS FOR SMALLER FONTS ONLY (Leaving background/dropdown colors to default)
 st.markdown("""
     <style>
-        /* Import Main App Font */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Global Typography and Background Reset */
         html, body, [data-testid="stAppViewContainer"], .main {
             font-family: 'Inter', sans-serif !important;
-            background-color: #121212 !important;
-            color: #e0e0e0 !important;
         }
         
-        /* Shrink Header Sizes */
+        /* Smaller font sizes for headings */
         h1 {
-            font-size: 24px !important;
+            font-size: 22px !important;
             font-weight: 700 !important;
-            color: #ffffff !important;
             margin-bottom: 5px !important;
         }
         h3 {
-            font-size: 16px !important;
+            font-size: 15px !important;
             font-weight: 600 !important;
-            color: #ffffff !important;
-            margin-top: 15px !important;
+            margin-top: 12px !important;
             margin-bottom: 5px !important;
         }
         h4 {
             font-size: 13px !important;
             font-weight: 500 !important;
-            color: #b0b0b0 !important;
             margin: 0 !important;
         }
         
-        /* Main Sidebar Customization */
-        [data-testid="stSidebar"] {
-            background-color: #181818 !important;
-            border-right: 1px solid #252525 !important;
-        }
-        
-        /* Adjust Form Labels & Text Sizes */
+        /* Smaller body and widget text */
         .stWidgetLabel p, label p {
             font-size: 12px !important;
-            color: #aaaaaa !important;
         }
         p, span, div {
             font-size: 13px !important;
         }
         
-        /* Target Tabs Wrapper */
-        button[data-baseweb="tab"] {
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            color: #888888 !important;
-            background-color: transparent !important;
-            border: none !important;
-        }
-        button[data-baseweb="tab"][aria-selected="true"] {
-            color: #ff003c !important;
-            border-bottom: 2px solid #ff003c !important;
-        }
-        
-        /* Match Metrics & Text Layouts to Card Styles */
-        div[data-testid="stMetricValue"] {
-            font-size: 28px !important;
-            font-weight: 700 !important;
-            color: #ff003c !important;
-        }
-        div[data-testid="stMetricLabel"] p {
-            font-size: 11px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-        }
-        
-        /* Customize Streamlit Progress Bars to Crimson Accent */
-        div[data-testid="stProgress"] div div {
-            background-color: #ff003c !important;
-        }
+        /* Compact progress bars */
         div[data-testid="stProgress"] > div {
-            background-color: #222222 !important;
             height: 6px !important;
         }
         
-        /* Style Custom Dropdown Selectboxes */
-        div[data-baseweb="select"] {
-            background-color: #1e1e1e !important;
-            border: 1px solid #2d2d2d !important;
-            border-radius: 6px !important;
-        }
-        div[data-baseweb="select"] div {
-            color: #ffffff !important;
-            font-size: 13px !important;
-        }
-        
-        /* Cleaner spacing rules */
+        /* Shorter spacing spacing rules */
         hr {
-            margin: 15px 0 !important;
-            border-color: #252525 !important;
+            margin: 12px 0 !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
+st.title("Manchester United Pro-Tier Scout Engine")
+st.markdown("---")
 
 # HARDCODED DATASET
 BACKUP_DATA = [
@@ -114,7 +62,7 @@ BACKUP_DATA = [
     {"Player": "Mateus Fernandes (West Ham)", "PassPctShort": 85.4, "PassPctLong": 52.1, "FinalThirdPasses": 4.8, "ProgPassDistance": 215.2, "ThroughBalls": 0.14, "Switches": 0.8, "PressPassPct": 80.5, "ProgCarries": 2.8, "TakeOnPct": 54.5, "Dispossessed": 1.4, "TacklesDef3rd": 1.2, "TacklesMid3rd": 1.5, "DribblersTackledPct": 45.2, "Interceptions": 0.9, "Blocks": 1.1, "Clearances": 1.3, "SCA": 2.9, "xA": 0.12, "BoxTouches": 1.6, "AerialWonPct": 36.5, "pPassing": 74, "pRetention": 80, "pDefending": 68, "pHunting": 66, "pThreat": 50, "pPhysical": 38},
     {"Player": "Angelo Stiller", "PassPctShort": 92.4, "PassPctLong": 78.9, "FinalThirdPasses": 6.8, "ProgPassDistance": 315.2, "ThroughBalls": 0.24, "Switches": 2.3, "PressPassPct": 88.1, "ProgCarries": 1.4, "TakeOnPct": 58.3, "Dispossessed": 0.5, "TacklesDef3rd": 0.8, "TacklesMid3rd": 1.4, "DribblersTackledPct": 58.1, "Interceptions": 1.8, "Blocks": 1.1, "Clearances": 1.4, "SCA": 3.8, "xA": 0.21, "BoxTouches": 1.7, "AerialWonPct": 46.5, "pPassing": 88, "pRetention": 93, "pDefending": 60, "pHunting": 78, "pThreat": 42, "pPhysical": 55},
     {"Player": "Kobbie Mainoo (Man Utd)", "PassPctShort": 91.2, "PassPctLong": 70.5, "FinalThirdPasses": 4.1, "ProgPassDistance": 195.4, "ThroughBalls": 0.11, "Switches": 0.6, "PressPassPct": 86.5, "ProgCarries": 2.9, "TakeOnPct": 62.1, "Dispossessed": 1.5, "TacklesDef3rd": 1.2, "TacklesMid3rd": 1.1, "DribblersTackledPct": 46.1, "Interceptions": 0.8, "Blocks": 1.3, "Clearances": 0.6, "SCA": 2.8, "xA": 0.10, "BoxTouches": 1.8, "AerialWonPct": 45.0, "pPassing": 65, "pRetention": 86, "pDefending": 55, "pHunting": 60, "pThreat": 40, "pPhysical": 48},
-    {"Player": "Casemiro (Man Utd)", "PassPctShort": 82.1, "PassPctLong": 56.4, "FinalThirdPasses": 4.9, "ProgPassDistance": 235.1, "ThroughBalls": 0.15, "Switches": 2.1, "PressPassPct": 72.4, "0.8": 2.7, "TakeOnPct": 40.0, "Dispossessed": 1.1, "TacklesDef3rd": 2.1, "TacklesMid3rd": 1.6, "DribblersTackledPct": 54.2, "Interceptions": 2.1, "Blocks": 1.9, "Clearances": 2.4, "SCA": 2.2, "xA": 0.11, "BoxTouches": 1.3, "AerialWonPct": 72.1, "pPassing": 40, "pRetention": 79, "pDefending": 85, "pHunting": 78, "pThreat": 35, "pPhysical": 78},
+    {"Player": "Casemiro (Man Utd)", "PassPctShort": 82.1, "PassPctLong": 56.4, "FinalThirdPasses": 4.9, "ProgPassDistance": 235.1, "ThroughBalls": 0.15, "Switches": 2.1, "PressPassPct": 72.4, "ProgCarries": 0.8, "TakeOnPct": 40.0, "Dispossessed": 1.1, "TacklesDef3rd": 2.1, "TacklesMid3rd": 1.6, "DribblersTackledPct": 54.2, "Interceptions": 2.1, "Blocks": 1.9, "Clearances": 2.4, "SCA": 2.2, "xA": 0.11, "BoxTouches": 1.3, "AerialWonPct": 72.1, "pPassing": 40, "pRetention": 79, "pDefending": 85, "pHunting": 78, "pThreat": 35, "pPhysical": 78},
     {"Player": "Bruno Fernandes (Man Utd)", "PassPctShort": 76.4, "PassPctLong": 44.2, "FinalThirdPasses": 7.4, "ProgPassDistance": 345.8, "ThroughBalls": 0.42, "Switches": 3.1, "PressPassPct": 71.2, "ProgCarries": 2.6, "TakeOnPct": 50.0, "Dispossessed": 1.8, "TacklesDef3rd": 0.7, "TacklesMid3rd": 1.2, "DribblersTackledPct": 38.5, "Interceptions": 1.1, "Blocks": 0.9, "Clearances": 0.5, "SCA": 5.4, "xA": 0.32, "BoxTouches": 3.4, "AerialWonPct": 38.0, "pPassing": 96, "pRetention": 74, "pDefending": 40, "pHunting": 58, "pThreat": 88, "pPhysical": 35},
     {"Player": "Manuel Ugarte (Man Utd)", "PassPctShort": 92.1, "PassPctLong": 64.2, "FinalThirdPasses": 2.8, "ProgPassDistance": 142.1, "ThroughBalls": 0.02, "Switches": 0.4, "PressPassPct": 85.2, "ProgCarries": 0.9, "TakeOnPct": 45.0, "Dispossessed": 0.6, "TacklesDef3rd": 2.4, "TacklesMid3rd": 2.8, "DribblersTackledPct": 56.5, "Interceptions": 2.2, "Blocks": 1.8, "Clearances": 1.5, "SCA": 1.1, "xA": 0.03, "BoxTouches": 0.4, "AerialWonPct": 52.5, "pPassing": 32, "pRetention": 88, "pDefending": 94, "pHunting": 89, "pThreat": 10, "pPhysical": 55},
     {"Player": "Declan Rice (Arsenal)", "PassPctShort": 91.5, "PassPctLong": 74.2, "FinalThirdPasses": 5.8, "ProgPassDistance": 285.4, "ThroughBalls": 0.16, "Switches": 1.9, "PressPassPct": 86.2, "ProgCarries": 2.4, "TakeOnPct": 56.0, "Dispossessed": 0.7, "TacklesDef3rd": 1.4, "TacklesMid3rd": 1.8, "DribblersTackledPct": 53.1, "Interceptions": 1.7, "Blocks": 1.4, "Clearances": 1.6, "SCA": 3.5, "xA": 0.20, "BoxTouches": 2.1, "AerialWonPct": 61.2, "pPassing": 78, "pRetention": 87, "pDefending": 79, "pHunting": 82, "pThreat": 60, "pPhysical": 70},
@@ -203,25 +151,26 @@ if df_players is not None:
         st.markdown("### 24-Parameter Advanced Scouting Feed")
         st.markdown("---")
         
+        # Mapped thresholds [Label, Key, Suffix, IsHigherBetter, VisualMaxScale]
         metric_categories = {
             "Passing Architecture & Range": [
-                ("Short-Medium Pass Accuracy", "PassPctShort", "%", True, 100),
-                ("Long-Range Pass Accuracy", "PassPctLong", "%", True, 100),
-                ("Passes Delivered into Final Third", "FinalThirdPasses", "/90", True, 10),
-                ("Progressive Distance Gained (Passing)", "ProgPassDistance", " yards", True, 400),
+                ("Short-Medium Pass Accuracy", "PassPctShort", "%", True, 100.0),
+                ("Long-Range Pass Accuracy", "PassPctLong", "%", True, 100.0),
+                ("Passes Delivered into Final Third", "FinalThirdPasses", "/90", True, 10.0),
+                ("Progressive Distance Gained (Passing)", "ProgPassDistance", " yards", True, 400.0),
                 ("Through Balls Executed", "ThroughBalls", "/90", True, 0.5),
                 ("Switches of Play", "Switches", "/90", True, 4.0),
             ],
             "Press Resistance & Ball Carrying": [
-                ("Pass Completion under Active Press", "PressPassPct", "%", True, 100),
+                ("Pass Completion under Active Press", "PressPassPct", "%", True, 100.0),
                 ("Progressive Ball Carries", "ProgCarries", "/90", True, 5.0),
-                ("Successful 1v1 Take-On Rate", "TakeOnPct", "%", True, 100),
+                ("Successful 1v1 Take-On Rate", "TakeOnPct", "%", True, 100.0),
                 ("Dispossessed / Lost Possession", "Dispossessed", "/90", False, 2.5),
             ],
             "True Defensive Architecture": [
                 ("Tackles in Defensive Third", "TacklesDef3rd", "/90", True, 3.0),
                 ("Tackles in Middle Third", "TacklesMid3rd", "/90", True, 3.0),
-                ("True Dribblers Tackled Efficiency Rate", "DribblersTackledPct", "%", True, 100),
+                ("True Dribblers Tackled Efficiency Rate", "DribblersTackledPct", "%", True, 100.0),
                 ("Interceptions Logged", "Interceptions", "/90", True, 3.0),
                 ("Shots/Passes Blocked", "Blocks", "/90", True, 3.0),
                 ("Clearances Completed", "Clearances", "/90", True, 3.0),
@@ -230,7 +179,7 @@ if df_players is not None:
                 ("Shot-Creating Actions Generated", "SCA", "/90", True, 6.0),
                 ("Expected Assists (xA)", "xA", "/90", True, 0.4),
                 ("Ball Touches Inside Attacking Box", "BoxTouches", "/90", True, 4.0),
-                ("Aerial Duels Won Percentage", "AerialWonPct", "%", True, 100),
+                ("Aerial Duels Won Percentage", "AerialWonPct", "%", True, 100.0),
             ]
         }
 
@@ -238,8 +187,9 @@ if df_players is not None:
             st.markdown(f"### {category_name}")
             
             for label, col_key, suffix, higher_is_better, max_scale in metrics:
-                val_a = row_a[col_key]
-                val_b = row_b[col_key]
+                # Force direct clean float loading from dataset (bypassing string pollution issues)
+                val_a = float(str(row_a[col_key]).replace('%','').replace('yards','').strip())
+                val_b = float(str(row_b[col_key]).replace('%','').replace('yards','').strip())
                 
                 if val_a == val_b:
                     winner = "Draw"
@@ -257,12 +207,12 @@ if df_players is not None:
                     
                 col_bar_a, col_bar_b = st.columns(2)
                 with col_bar_a:
-                    st.write(f"**{player_a}:** {val_a}{suffix}")
-                    prog_val_a = min(1.0, float(val_a) / max_scale)
+                    st.write(f"**{player_a}:** {row_a[col_key]}{suffix}")
+                    prog_val_a = min(1.0, val_a / max_scale)
                     st.progress(max(0.0, prog_val_a))
                 with col_bar_b:
-                    st.write(f"**{player_b}:** {val_b}{suffix}")
-                    prog_val_b = min(1.0, float(val_b) / max_scale)
+                    st.write(f"**{player_b}:** {row_b[col_key]}{suffix}")
+                    prog_val_b = min(1.0, val_b / max_scale)
                     st.progress(max(0.0, prog_val_b))
                     
                 st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
