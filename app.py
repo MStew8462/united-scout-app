@@ -4,7 +4,7 @@ import pandas as pd
 # Set page layout to wide
 st.set_page_config(layout="wide", page_title="United Transfer Scout")
 
-# INJECT CSS FOR SMALLER FONTS ONLY (Leaving background/dropdown colors to default)
+# INJECT CSS FOR STRONGER HEADINGS AND DENSE GRIDS
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -13,41 +13,71 @@ st.markdown("""
             font-family: 'Inter', sans-serif !important;
         }
         
-        /* Smaller font sizes for headings */
+        /* Make headings significantly bolder and clear */
         h1 {
             font-size: 22px !important;
-            font-weight: 700 !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px !important;
             margin-bottom: 5px !important;
         }
         h3 {
-            font-size: 15px !important;
-            font-weight: 600 !important;
-            margin-top: 12px !important;
-            margin-bottom: 5px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.3px !important;
+            margin-top: 15px !important;
+            margin-bottom: 8px !important;
         }
         h4 {
             font-size: 13px !important;
-            font-weight: 500 !important;
+            font-weight: 600 !important;
+            color: #444444 !important;
             margin: 0 !important;
         }
         
-        /* Smaller body and widget text */
         .stWidgetLabel p, label p {
             font-size: 12px !important;
+            font-weight: 500 !important;
         }
         p, span, div {
             font-size: 13px !important;
         }
         
-        /* Compact progress bars */
         div[data-testid="stProgress"] > div {
             height: 6px !important;
         }
         
-        /* Shorter spacing spacing rules */
         hr {
             margin: 12px 0 !important;
         }
+
+        /* Premium Minimalist Leaderboard Grid Style */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px !important;
+            margin-top: 10px;
+        }
+        .leaderboard-table th {
+            text-align: left;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: #666666;
+            border-bottom: 1px solid #eaeaea;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .leaderboard-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f5f5f5;
+            color: #333333;
+        }
+        .leaderboard-table tr:hover {
+            background-color: #fafafa;
+        }
+        .rank-col { font-weight: 700; color: #999999; width: 60px; }
+        .player-col { font-weight: 600; color: #111111; }
+        .score-col { font-weight: 700; color: #2e7d32; text-align: right; width: 120px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -126,6 +156,7 @@ if df_players is not None:
 
     tab_h2h, tab_leaderboard = st.tabs(["Player Head-to-Head", "Global Squad Leaderboard"])
 
+    # ==================== TAB 1: HEAD-TO-HEAD LAYOUT ====================
     with tab_h2h:
         player_list = df_players["Player"].tolist()
 
@@ -151,7 +182,6 @@ if df_players is not None:
         st.markdown("### 24-Parameter Advanced Scouting Feed")
         st.markdown("---")
         
-        # Mapped thresholds [Label, Key, Suffix, IsHigherBetter, VisualMaxScale]
         metric_categories = {
             "Passing Architecture & Range": [
                 ("Short-Medium Pass Accuracy", "PassPctShort", "%", True, 100.0),
@@ -187,7 +217,6 @@ if df_players is not None:
             st.markdown(f"### {category_name}")
             
             for label, col_key, suffix, higher_is_better, max_scale in metrics:
-                # Force direct clean float loading from dataset (bypassing string pollution issues)
                 val_a = float(str(row_a[col_key]).replace('%','').replace('yards','').strip())
                 val_b = float(str(row_b[col_key]).replace('%','').replace('yards','').strip())
                 
@@ -218,18 +247,34 @@ if df_players is not None:
                 st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
             st.markdown("---")
 
+    # ==================== TAB 2: CLEAN GRID LEADERBOARD ====================
     with tab_leaderboard:
         st.markdown(f"### Dynamic Transfer Target Ranking ({selected_preset.split(' (')[0]})")
-        st.markdown("---")
         
         df_leaderboard = df_players[["Player", "FitScore"]].sort_values(by="FitScore", ascending=False).reset_index(drop=True)
         
+        # Build Table Header
+        html_table = """
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th class="rank-col">Rank</th>
+                    <th class="player-col">Target Profile</th>
+                    <th class="score-col">Tactical Match</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        # Populate Table Rows
         for index, row in df_leaderboard.iterrows():
-            col_rank, col_name, col_score = st.columns([1, 4, 2])
-            with col_rank:
-                st.markdown(f"### #{index + 1}")
-            with col_name:
-                st.markdown(f"### {row['Player']}")
-            with col_score:
-                st.markdown(f"### {row['FitScore']}% Match")
-            st.markdown("<hr style='margin:0.2rem 0px; opacity:0.3;'>", unsafe_allow_html=True)
+            html_table += f"""
+                <tr>
+                    <td class="rank-col">#{index + 1}</td>
+                    <td class="player-col">{row['Player']}</td>
+                    <td class="score-col">{row['FitScore']}% Fit</td>
+                </tr>
+            """
+            
+        html_table += "</tbody></table>"
+        st.markdown(html_table, unsafe_allow_html=True)
