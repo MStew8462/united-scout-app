@@ -4,10 +4,10 @@ import pandas as pd
 # Set page layout to wide
 st.set_page_config(layout="wide", page_title="United Transfer Scout")
 
-st.title("🔴 Manchester United Pro-Tier Scout Engine")
+st.title("Manchester United Pro-Tier Scout Engine")
 st.markdown("---")
 
-# HARDCODED BACKUP DATASET (Prevents any CSV syncing/pasting errors)
+# HARDCODED DATASET
 BACKUP_DATA = [
     {"Player": "Sandro Tonali", "PassPctShort": 89.4, "PassPctLong": 68.2, "FinalThirdPasses": 5.2, "ProgPassDistance": 240.5, "ThroughBalls": 0.18, "Switches": 1.4, "PressPassPct": 82.4, "ProgCarries": 2.1, "TakeOnPct": 55.0, "Dispossessed": 1.1, "TacklesDef3rd": 1.1, "TacklesMid3rd": 1.4, "DribblersTackledPct": 48.5, "Interceptions": 1.2, "Blocks": 1.2, "Clearances": 0.8, "SCA": 3.2, "xA": 0.14, "BoxTouches": 1.1, "AerialWonPct": 52.0, "pPassing": 73, "pRetention": 84, "pDefending": 45, "pHunting": 62, "pThreat": 22, "pPhysical": 50},
     {"Player": "Adam Wharton (Crystal Palace)", "PassPctShort": 87.5, "PassPctLong": 58.2, "FinalThirdPasses": 6.4, "ProgPassDistance": 295.1, "ThroughBalls": 0.22, "Switches": 1.8, "PressPassPct": 84.1, "ProgCarries": 1.9, "TakeOnPct": 52.3, "Dispossessed": 0.9, "TacklesDef3rd": 1.9, "TacklesMid3rd": 1.8, "DribblersTackledPct": 51.4, "Interceptions": 1.4, "Blocks": 1.6, "Clearances": 1.2, "SCA": 3.4, "xA": 0.18, "BoxTouches": 1.2, "AerialWonPct": 46.5, "pPassing": 85, "pRetention": 84, "pDefending": 83, "pHunting": 93, "pThreat": 20, "pPhysical": 40},
@@ -26,12 +26,10 @@ BACKUP_DATA = [
     {"Player": "Aurélien Tchouaméni (Real Madrid)", "PassPctShort": 93.1, "PassPctLong": 82.4, "FinalThirdPasses": 6.2, "ProgPassDistance": 310.2, "ThroughBalls": 0.14, "Switches": 2.5, "PressPassPct": 89.5, "ProgCarries": 1.2, "TakeOnPct": 52.0, "Dispossessed": 0.4, "TacklesDef3rd": 1.6, "TacklesMid3rd": 2.1, "DribblersTackledPct": 62.4, "Interceptions": 2.3, "Blocks": 1.4, "Clearances": 2.1, "SCA": 2.0, "xA": 0.08, "BoxTouches": 0.8, "AerialWonPct": 76.5, "pPassing": 88, "pRetention": 92, "pDefending": 82, "pHunting": 85, "pThreat": 30, "pPhysical": 91}
 ]
 
-# 1. LOAD DATA METHOD WITH FAILSAFE AUTOMATION
 def load_data():
     try:
         df = pd.read_csv("midfielders.csv")
         df.columns = df.columns.str.strip()
-        # Verify a key column exists, otherwise trigger backup fallback
         if "PassPctShort" in df.columns:
             return df
     except Exception:
@@ -42,8 +40,8 @@ df_players = load_data()
 
 if df_players is not None:
     
-    # 2. TACTICAL PRESETS CONFIGURATION
-    st.sidebar.header("⚙️ Scouting Configuration")
+    # TACTICAL PRESETS CONFIGURATION
+    st.sidebar.header("Scouting Configuration")
     
     presets = {
         "Custom (Manual Sliders)": [5, 5, 5, 5, 5, 5],
@@ -56,7 +54,7 @@ if df_players is not None:
     preset_values = presets[selected_preset]
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("🎯 Tactical Weights")
+    st.sidebar.subheader("Tactical Weights")
 
     w_progression = st.sidebar.slider("Progressive Passing", 1, 10, preset_values[0])
     w_retention = st.sidebar.slider("Ball Retention", 1, 10, preset_values[1])
@@ -67,7 +65,6 @@ if df_players is not None:
 
     total_possible_weight = (w_progression + w_retention + w_tackling + w_recoveries + w_box_threat + w_physicality) * 100
 
-    # HELPER FUNCTION FOR FIT % CALCULATION
     def calculate_fit(row):
         weighted_score = (
             (float(row["pPassing"]) * w_progression) +
@@ -81,18 +78,17 @@ if df_players is not None:
 
     df_players["FitScore"] = df_players.apply(calculate_fit, axis=1)
 
-    # CREATE NAVIGATION TABS
-    tab_h2h, tab_leaderboard = st.tabs(["📊 Deep-Dive Comparison Matrix", "🏆 Global Squad Leaderboard"])
+    tab_h2h, tab_leaderboard = st.tabs(["Player Head-to-Head", "Global Squad Leaderboard"])
 
-    # ==================== TAB 1: ADVANCED H2H MATRIX ====================
+    # ==================== TAB 1: HEAD-TO-HEAD LAYOUT ====================
     with tab_h2h:
         player_list = df_players["Player"].tolist()
 
         col_select1, col_select2 = st.columns(2)
         with col_select1:
-            player_a = st.selectbox("Select Player A", player_list, index=2) # Default Éderson
+            player_a = st.selectbox("Select Player A", player_list, index=2) # Ederson
         with col_select2:
-            player_b = st.selectbox("Select Player B", player_list, index=4) # Default Stiller
+            player_b = st.selectbox("Select Player B", player_list, index=3) # Mateus Fernandes
 
         row_a = df_players[df_players["Player"] == player_a].iloc[0]
         row_b = df_players[df_players["Player"] == player_b].iloc[0]
@@ -101,43 +97,44 @@ if df_players is not None:
 
         col_fit1, col_fit2 = st.columns(2)
         with col_fit1:
-            st.metric(label=f"📊 {player_a} - Engine Fit Rating", value=f"{row_a['FitScore']}%")
+            st.metric(label=f"{player_a} - Engine Fit Rating", value=f"{row_a['FitScore']}%")
             st.progress(row_a['FitScore'] / 100)
         with col_fit2:
-            st.metric(label=f"📊 {player_b} - Engine Fit Rating", value=f"{row_b['FitScore']}%")
+            st.metric(label=f"{player_b} - Engine Fit Rating", value=f"{row_b['FitScore']}%")
             st.progress(row_b['FitScore'] / 100)
 
-        st.markdown("### 📋 24-Parameter Advanced Scouting Feed")
+        st.markdown("### 24-Parameter Advanced Scouting Feed")
         st.markdown("---")
         
+        # Mapped categories with custom explicit baseline maximum values [Label, Key, Suffix, IsHigherBetter, VisualMaxScale]
         metric_categories = {
-            "📈 Passing Architecture & Range": [
-                ("Short-Medium Pass Accuracy", "PassPctShort", "%", True),
-                ("Long-Range Pass Accuracy", "PassPctLong", "%", True),
-                ("Passes Delivered into Final Third", "FinalThirdPasses", "/90", True),
-                ("Progressive Distance Gained (Passing)", "ProgPassDistance", " yards", True),
-                ("Through Balls Executed", "ThroughBalls", "/90", True),
-                ("Switches of Play", "Switches", "/90", True),
+            "Passing Architecture & Range": [
+                ("Short-Medium Pass Accuracy", "PassPctShort", "%", True, 100),
+                ("Long-Range Pass Accuracy", "PassPctLong", "%", True, 100),
+                ("Passes Delivered into Final Third", "FinalThirdPasses", "/90", True, 10),
+                ("Progressive Distance Gained (Passing)", "ProgPassDistance", " yards", True, 400),
+                ("Through Balls Executed", "ThroughBalls", "/90", True, 0.5),
+                ("Switches of Play", "Switches", "/90", True, 4.0),
             ],
-            "🛡️ Press Resistance & Ball Carrying": [
-                ("Pass Completion under Active Press", "PressPassPct", "%", True),
-                ("Progressive Ball Carries", "ProgCarries", "/90", True),
-                ("Successful 1v1 Take-On Rate", "TakeOnPct", "%", True),
-                ("Dispossessed / Lost Possession", "Dispossessed", "/90", False),
+            "Press Resistance & Ball Carrying": [
+                ("Pass Completion under Active Press", "PressPassPct", "%", True, 100),
+                ("Progressive Ball Carries", "ProgCarries", "/90", True, 5.0),
+                ("Successful 1v1 Take-On Rate", "TakeOnPct", "%", True, 100),
+                ("Dispossessed / Lost Possession", "Dispossessed", "/90", False, 2.5),
             ],
-            "🛑 True Defensive Architecture": [
-                ("Tackles in Defensive Third", "TacklesDef3rd", "/90", True),
-                ("Tackles in Middle Third", "TacklesMid3rd", "/90", True),
-                ("True Dribblers Tackled Efficiency Rate", "DribblersTackledPct", "%", True),
-                ("Interceptions Logged", "Interceptions", "/90", True),
-                ("Shots/Passes Blocked", "Blocks", "/90", True),
-                ("Clearances Completed", "Clearances", "/90", True),
+            "True Defensive Architecture": [
+                ("Tackles in Defensive Third", "TacklesDef3rd", "/90", True, 3.0),
+                ("Tackles in Middle Third", "TacklesMid3rd", "/90", True, 3.0),
+                ("True Dribblers Tackled Efficiency Rate", "DribblersTackledPct", "%", True, 100),
+                ("Interceptions Logged", "Interceptions", "/90", True, 3.0),
+                ("Shots/Passes Blocked", "Blocks", "/90", True, 3.0),
+                ("Clearances Completed", "Clearances", "/90", True, 3.0),
             ],
-            "⚔️ Creativity & Structural Presence": [
-                ("Shot-Creating Actions Generated", "SCA", "/90", True),
-                ("Expected Assists (xA)", "xA", "/90", True),
-                ("Ball Touches Inside Attacking Box", "BoxTouches", "/90", True),
-                ("Aerial Duels Won Percentage", "AerialWonPct", "%", True),
+            "Creativity & Structural Presence": [
+                ("Shot-Creating Actions Generated", "SCA", "/90", True, 6.0),
+                ("Expected Assists (xA)", "xA", "/90", True, 0.4),
+                ("Ball Touches Inside Attacking Box", "BoxTouches", "/90", True, 4.0),
+                ("Aerial Duels Won Percentage", "AerialWonPct", "%", True, 100),
             ]
         }
 
@@ -145,40 +142,41 @@ if df_players is not None:
             st.markdown(f"### {category_name}")
             st.markdown("<br>", unsafe_allow_html=True)
             
-            for label, col_key, suffix, higher_is_better in metrics:
+            for label, col_key, suffix, higher_is_better, max_scale in metrics:
                 val_a = row_a[col_key]
                 val_b = row_b[col_key]
                 
                 if val_a == val_b:
-                    winner = "🟡 Draw"
+                    winner = "Draw"
                 else:
                     if higher_is_better:
-                        winner = f"🟢 {player_a}" if val_a > val_b else f"🟢 {player_b}"
+                        winner = player_a if val_a > val_b else player_b
                     else:
-                        winner = f"🟢 {player_a}" if val_a < val_b else f"🟢 {player_b}"
+                        winner = player_a if val_a < val_b else player_b
                 
                 col_text_left, col_text_right = st.columns([3, 1])
                 with col_text_left:
                     st.markdown(f"#### {label}")
                 with col_text_right:
-                    st.markdown(f"**Edge:** {winner}")
+                    st.markdown(f"**Winner:** {winner}")
                     
                 col_bar_a, col_bar_b = st.columns(2)
                 with col_bar_a:
                     st.write(f"**{player_a}:** {val_a}{suffix}")
-                    prog_val_a = min(100, int(val_a) if "%" in suffix or val_a > 1 else int(val_a * 100))
-                    st.progress(max(0, prog_val_a) / 100)
+                    # Scale the value proportionally against its relative tactical threshold ceiling
+                    prog_val_a = min(1.0, float(val_a) / max_scale)
+                    st.progress(max(0.0, prog_val_a))
                 with col_bar_b:
                     st.write(f"**{player_b}:** {val_b}{suffix}")
-                    prog_val_b = min(100, int(val_b) if "%" in suffix or val_b > 1 else int(val_b * 100))
-                    st.progress(max(0, prog_val_b) / 100)
+                    prog_val_b = min(1.0, float(val_b) / max_scale)
+                    st.progress(max(0.0, prog_val_b))
                     
                 st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
             st.markdown("---")
 
     # ==================== TAB 2: GLOBAL LEADERBOARD ====================
     with tab_leaderboard:
-        st.markdown(f"### 🏆 Dynamic Transfer Target Ranking ({selected_preset.split(' (')[0]})")
+        st.markdown(f"### Dynamic Transfer Target Ranking ({selected_preset.split(' (')[0]})")
         st.markdown("Calculated by tracking multi-layered sub-parameters simultaneously against sidebar configurations.")
         st.markdown("---")
         
@@ -187,9 +185,9 @@ if df_players is not None:
         for index, row in df_leaderboard.iterrows():
             col_rank, col_name, col_score = st.columns([1, 4, 2])
             with col_rank:
-                st.markdown(f"### **#{index + 1}**")
+                st.markdown(f"### #{index + 1}")
             with col_name:
                 st.markdown(f"### {row['Player']}")
             with col_score:
-                st.markdown(f"### 🟢 **{row['FitScore']}%** Match")
+                st.markdown(f"### {row['FitScore']}% Match")
             st.markdown("<hr style='margin:0.2rem 0px; opacity:0.3;'>", unsafe_allow_html=True)
