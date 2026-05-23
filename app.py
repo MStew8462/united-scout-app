@@ -4,7 +4,7 @@ import pandas as pd
 # Set page layout to wide
 st.set_page_config(layout="wide", page_title="United Transfer Scout")
 
-# INJECT CSS FOR SMALLER FONTS, BOLDER HEADINGS, AND TIGHT LAYOUTS
+# INJECT CSS FOR STRONGER HEADINGS, COMPACT ROWS, AND MINIMAL WIREFRAME FEED
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -50,9 +50,51 @@ st.markdown("""
             margin: 12px 0 !important;
         }
 
-        /* Force Streamlit Dataframe rows to stay tight and compact */
-        [data-testid="stDataFrame"] div div div table {
-            font-size: 13px !important;
+        /* Mobile-Safe Gridless Leaderboard Container */
+        .mobile-leaderboard {
+            width: 100%;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+        
+        /* Individual Gridless Row Block */
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 4px;
+            border-bottom: 1px solid #f0f0f2; /* Subtle separation line only, no grid boxes */
+        }
+        
+        .leaderboard-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .rank-badge {
+            font-weight: 800;
+            color: #8e8e93;
+            font-size: 12px;
+            min-width: 24px;
+        }
+        
+        .player-text {
+            font-weight: 600;
+            color: #1c1c1e;
+            font-size: 13px;
+        }
+        
+        .score-badge {
+            font-weight: 700;
+            color: #1e7e34;
+            font-size: 13px;
+            text-align: right;
+            white-space: nowrap;
+            padding-left: 10px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -67,7 +109,7 @@ BACKUP_DATA = [
     {"Player": "Éderson (Atalanta)", "PassPctShort": 89.2, "PassPctLong": 72.1, "FinalThirdPasses": 4.2, "ProgPassDistance": 210.5, "ThroughBalls": 0.08, "Switches": 1.1, "PressPassPct": 74.5, "ProgCarries": 2.3, "TakeOnPct": 55.2, "Dispossessed": 0.9, "TacklesDef3rd": 1.8, "TacklesMid3rd": 2.1, "DribblersTackledPct": 53.6, "Interceptions": 1.1, "Blocks": 1.5, "Clearances": 1.6, "SCA": 2.1, "xA": 0.07, "BoxTouches": 1.4, "AerialWonPct": 41.5, "pPassing": 62, "pRetention": 83, "pDefending": 86, "pHunting": 81, "pThreat": 48, "pPhysical": 68},
     {"Player": "Mateus Fernandes (West Ham)", "PassPctShort": 85.4, "PassPctLong": 52.1, "FinalThirdPasses": 4.8, "ProgPassDistance": 215.2, "ThroughBalls": 0.14, "Switches": 0.8, "PressPassPct": 80.5, "ProgCarries": 2.8, "TakeOnPct": 54.5, "Dispossessed": 1.4, "TacklesDef3rd": 1.2, "TacklesMid3rd": 1.5, "DribblersTackledPct": 45.2, "Interceptions": 0.9, "Blocks": 1.1, "Clearances": 1.3, "SCA": 2.9, "xA": 0.12, "BoxTouches": 1.6, "AerialWonPct": 36.5, "pPassing": 74, "pRetention": 80, "pDefending": 68, "pHunting": 66, "pThreat": 50, "pPhysical": 38},
     {"Player": "Angelo Stiller", "PassPctShort": 92.4, "PassPctLong": 78.9, "FinalThirdPasses": 6.8, "ProgPassDistance": 315.2, "ThroughBalls": 0.24, "Switches": 2.3, "PressPassPct": 88.1, "ProgCarries": 1.4, "TakeOnPct": 58.3, "Dispossessed": 0.5, "TacklesDef3rd": 0.8, "TacklesMid3rd": 1.4, "DribblersTackledPct": 58.1, "Interceptions": 1.8, "Blocks": 1.1, "Clearances": 1.4, "SCA": 3.8, "xA": 0.21, "BoxTouches": 1.7, "AerialWonPct": 46.5, "pPassing": 88, "pRetention": 93, "pDefending": 60, "pHunting": 78, "pThreat": 42, "pPhysical": 55},
-    {"Player": "Kobbie Mainoo (Man Utd)", "PassPctShort": 91.2, "0.5": 70.5, "FinalThirdPasses": 4.1, "ProgPassDistance": 195.4, "ThroughBalls": 0.11, "Switches": 0.6, "PressPassPct": 86.5, "ProgCarries": 2.9, "TakeOnPct": 62.1, "Dispossessed": 1.5, "TacklesDef3rd": 1.2, "TacklesMid3rd": 1.1, "DribblersTackledPct": 46.1, "Interceptions": 0.8, "Blocks": 1.3, "Clearances": 0.6, "SCA": 2.8, "xA": 0.10, "BoxTouches": 1.8, "AerialWonPct": 45.0, "pPassing": 65, "pRetention": 86, "pDefending": 55, "pHunting": 60, "pThreat": 40, "pPhysical": 48},
+    {"Player": "Kobbie Mainoo (Man Utd)", "PassPctShort": 91.2, "PassPctLong": 70.5, "FinalThirdPasses": 4.1, "ProgPassDistance": 195.4, "ThroughBalls": 0.11, "Switches": 0.6, "PressPassPct": 86.5, "ProgCarries": 2.9, "TakeOnPct": 62.1, "Dispossessed": 1.5, "TacklesDef3rd": 1.2, "TacklesMid3rd": 1.1, "DribblersTackledPct": 46.1, "Interceptions": 0.8, "Blocks": 1.3, "Clearances": 0.6, "SCA": 2.8, "xA": 0.10, "BoxTouches": 1.8, "AerialWonPct": 45.0, "pPassing": 65, "pRetention": 86, "pDefending": 55, "pHunting": 60, "pThreat": 40, "pPhysical": 48},
     {"Player": "Casemiro (Man Utd)", "PassPctShort": 82.1, "PassPctLong": 56.4, "FinalThirdPasses": 4.9, "ProgPassDistance": 235.1, "ThroughBalls": 0.15, "Switches": 2.1, "PressPassPct": 72.4, "ProgCarries": 0.8, "TakeOnPct": 40.0, "Dispossessed": 1.1, "TacklesDef3rd": 2.1, "TacklesMid3rd": 1.6, "DribblersTackledPct": 54.2, "Interceptions": 2.1, "Blocks": 1.9, "Clearances": 2.4, "SCA": 2.2, "xA": 0.11, "BoxTouches": 1.3, "AerialWonPct": 72.1, "pPassing": 40, "pRetention": 79, "pDefending": 85, "pHunting": 78, "pThreat": 35, "pPhysical": 78},
     {"Player": "Bruno Fernandes (Man Utd)", "PassPctShort": 76.4, "PassPctLong": 44.2, "FinalThirdPasses": 7.4, "ProgPassDistance": 345.8, "ThroughBalls": 0.42, "Switches": 3.1, "PressPassPct": 71.2, "ProgCarries": 2.6, "TakeOnPct": 50.0, "Dispossessed": 1.8, "TacklesDef3rd": 0.7, "TacklesMid3rd": 1.2, "DribblersTackledPct": 38.5, "Interceptions": 1.1, "Blocks": 0.9, "Clearances": 0.5, "SCA": 5.4, "xA": 0.32, "BoxTouches": 3.4, "AerialWonPct": 38.0, "pPassing": 96, "pRetention": 74, "pDefending": 40, "pHunting": 58, "pThreat": 88, "pPhysical": 35},
     {"Player": "Manuel Ugarte (Man Utd)", "PassPctShort": 92.1, "PassPctLong": 64.2, "FinalThirdPasses": 2.8, "ProgPassDistance": 142.1, "ThroughBalls": 0.02, "Switches": 0.4, "PressPassPct": 85.2, "ProgCarries": 0.9, "TakeOnPct": 45.0, "Dispossessed": 0.6, "TacklesDef3rd": 2.4, "TacklesMid3rd": 2.8, "DribblersTackledPct": 56.5, "Interceptions": 2.2, "Blocks": 1.8, "Clearances": 1.5, "SCA": 1.1, "xA": 0.03, "BoxTouches": 0.4, "AerialWonPct": 52.5, "pPassing": 32, "pRetention": 88, "pDefending": 94, "pHunting": 89, "pThreat": 10, "pPhysical": 55},
@@ -223,22 +265,30 @@ if df_players is not None:
                 st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
             st.markdown("---")
 
-    # ==================== TAB 2: ROBUST GRID LEADERBOARD ====================
+    # ==================== TAB 2: GRIDLESS MOBILE-SAFE LEADERBOARD ====================
     with tab_leaderboard:
         st.markdown(f"### Dynamic Transfer Target Ranking ({selected_preset.split(' (')[0]})")
         
-        # Sort values
-        df_sorted = df_players[["Player", "FitScore"]].sort_values(by="FitScore", ascending=False).reset_index(drop=True)
+        df_leaderboard = df_players[["Player", "FitScore"]].sort_values(by="FitScore", ascending=False).reset_index(drop=True)
         
-        # Synchronize Angelo Stiller's location name directly in the data stream array
-        df_sorted.loc[df_sorted["Player"] == "Angelo Stiller", "Player"] = "Angelo Stiller (Stuttgart)"
+        # Build clean string directly into a localized custom UI loop wrapper block
+        container_html = '<div class="mobile-leaderboard">'
         
-        # Create a dynamic index ranking array starting from #1
-        df_sorted.index = [f"#{i+1}" for i in range(len(df_sorted))]
-        df_sorted.index.name = "Rank"
-        
-        # Rename columns for a pristine display layout
-        df_grid = df_sorted.rename(columns={"Player": "Target Profile", "FitScore": "Tactical Match %"})
-        
-        # Output directly into an interactive, dense single-line grid container
-        st.dataframe(df_grid, use_container_width=True, height=560)
+        for index, row in df_leaderboard.iterrows():
+            display_name = row['Player']
+            if display_name == "Angelo Stiller":
+                display_name = "Angelo Stiller (Stuttgart)"
+                
+            # Render a single-line block with no table structure to block column scaling
+            container_html += f"""
+            <div class="leaderboard-row">
+                <div class="leaderboard-left">
+                    <span class="rank-badge">#{index + 1}</span>
+                    <span class="player-text">{display_name}</span>
+                </div>
+                <div class="score-badge">{row['FitScore']}% Fit</div>
+            </div>
+            """
+            
+        container_html += '</div>'
+        st.components.v1.html(container_html, height=580, scrolling=False)
