@@ -4,7 +4,7 @@ import pandas as pd
 # Set page layout to wide
 st.set_page_config(layout="wide", page_title="United Transfer Scout")
 
-# INJECT CSS FOR STRONGER HEADINGS, COMPACT ROWS, AND MINIMAL WIREFRAME FEED
+# INJECT CSS FOR PREMIUM BOLDER TYPOGRAPHY AND MINIMAL CARD INTERFACES
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -13,12 +13,13 @@ st.markdown("""
             font-family: 'Inter', sans-serif !important;
         }
         
-        /* Make headings extra bold so they stand out */
+        /* High-contrast, extra bold headings */
         h1 {
             font-size: 22px !important;
             font-weight: 800 !important;
             letter-spacing: -0.6px !important;
             margin-bottom: 5px !important;
+            color: #111111 !important;
         }
         h3 {
             font-size: 16px !important;
@@ -26,6 +27,7 @@ st.markdown("""
             letter-spacing: -0.4px !important;
             margin-top: 16px !important;
             margin-bottom: 8px !important;
+            color: #111111 !important;
         }
         h4 {
             font-size: 13px !important;
@@ -50,51 +52,23 @@ st.markdown("""
             margin: 12px 0 !important;
         }
 
-        /* Mobile-Safe Gridless Leaderboard Container */
-        .mobile-leaderboard {
-            width: 100%;
-            max-width: 100%;
-            margin-top: 10px;
+        /* Minimalist layout container styling for list items */
+        .rank-number {
+            font-weight: 800 !important;
+            color: #8e8e93 !important;
+            font-size: 13px !important;
         }
-        
-        /* Individual Gridless Row Block */
-        .leaderboard-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 4px;
-            border-bottom: 1px solid #f0f0f2; /* Subtle separation line only, no grid boxes */
+        .player-profile-name {
+            font-weight: 600 !important;
+            color: #111111 !important;
+            font-size: 13px !important;
         }
-        
-        .leaderboard-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .rank-badge {
-            font-weight: 800;
-            color: #8e8e93;
-            font-size: 12px;
-            min-width: 24px;
-        }
-        
-        .player-text {
-            font-weight: 600;
-            color: #1c1c1e;
-            font-size: 13px;
-        }
-        
-        .score-badge {
-            font-weight: 700;
-            color: #1e7e34;
-            font-size: 13px;
-            text-align: right;
-            white-space: nowrap;
-            padding-left: 10px;
+        .percentage-score {
+            font-weight: 700 !important;
+            color: #1e7e34 !important;
+            font-size: 13px !important;
+            text-align: right !important;
+            display: block !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -265,30 +239,27 @@ if df_players is not None:
                 st.markdown("<div style='margin-bottom:12px;'></div>", unsafe_allow_html=True)
             st.markdown("---")
 
-    # ==================== TAB 2: GRIDLESS MOBILE-SAFE LEADERBOARD ====================
+    # ==================== TAB 2: NATIVE CLEAN MATRIX LEADERBOARD ====================
     with tab_leaderboard:
         st.markdown(f"### Dynamic Transfer Target Ranking ({selected_preset.split(' (')[0]})")
+        st.markdown("---")
         
         df_leaderboard = df_players[["Player", "FitScore"]].sort_values(by="FitScore", ascending=False).reset_index(drop=True)
         
-        # Build clean string directly into a localized custom UI loop wrapper block
-        container_html = '<div class="mobile-leaderboard">'
-        
+        # Display each row dynamically inside tight native responsive grids
         for index, row in df_leaderboard.iterrows():
             display_name = row['Player']
             if display_name == "Angelo Stiller":
                 display_name = "Angelo Stiller (Stuttgart)"
                 
-            # Render a single-line block with no table structure to block column scaling
-            container_html += f"""
-            <div class="leaderboard-row">
-                <div class="leaderboard-left">
-                    <span class="rank-badge">#{index + 1}</span>
-                    <span class="player-text">{display_name}</span>
-                </div>
-                <div class="score-badge">{row['FitScore']}% Fit</div>
-            </div>
-            """
-            
-        container_html += '</div>'
-        st.components.v1.html(container_html, height=580, scrolling=False)
+            # Allocate columns: Rank #, Player Name, and Fit Score
+            c1, c2, c3 = st.columns([1, 8, 3])
+            with c1:
+                st.markdown(f'<span class="rank-number">#{index + 1}</span>', unsafe_allow_html=True)
+            with c2:
+                st.markdown(f'<span class="player-profile-name">{display_name}</span>', unsafe_allow_html=True)
+            with c3:
+                st.markdown(f'<span class="percentage-score">{row["FitScore"]}% Fit</span>', unsafe_allow_html=True)
+                
+            # Inject a minimal horizontal divider line to prevent vertical clutter
+            st.markdown("<hr style='margin: 4px 0px; opacity: 0.25;'>", unsafe_allow_html=True)
